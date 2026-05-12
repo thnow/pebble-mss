@@ -2055,23 +2055,15 @@ static void layer_update_callback_health_up_down(Layer *layer, GContext* ctx){
 		int pos = 10;
 	#endif
 
-	if(health_higher_lower_than_avg == 0) {
-		#if defined(PBL_PLATFORM_EMERY)
-			layer_set_frame(text_layer_get_layer(text_layer_health), GRect(25, 180, 90, 30)); // Todo: fix hardcode and use vals from inc_main_load_x.h
-		#else
-			layer_set_frame(text_layer_get_layer(text_layer_health), GRect(14, 132, 100, 20)); // Todo: fix hardcode and use vals from inc_main_load_x.h
-		#endif
-		
-	} else {
-		#if defined(PBL_PLATFORM_EMERY)
-			layer_set_frame(text_layer_get_layer(text_layer_health), GRect(25+23, 180, 90, 30)); // Todo: fix hardcode and use vals from inc_main_load_x.h
-		#else
-			layer_set_frame(text_layer_get_layer(text_layer_health), GRect(14+10, 132, 100, 20)); // Todo: fix hardcode and use vals from inc_main_load_x.h
-		#endif		
-		graphics_context_set_fill_color(ctx, background_color_clock);
-		graphics_fill_rect(ctx, GRect(0, 0, pos, pos), 0, GCornerNone);
-		graphics_context_set_stroke_color(ctx, textcolor_Steps_actual);
-	}
+	#if defined(PBL_PLATFORM_EMERY)
+		layer_set_frame(text_layer_get_layer(text_layer_health), GRect(25+23, 180, 90, 30)); // Todo: fix hardcode and use vals from inc_main_load_x.h
+	#else
+		layer_set_frame(text_layer_get_layer(text_layer_health), GRect(14+10, 132, 100, 20)); // Todo: fix hardcode and use vals from inc_main_load_x.h
+	#endif		
+	graphics_context_set_fill_color(ctx, background_color_clock);
+	graphics_fill_rect(ctx, GRect(0, 0, pos, pos), 0, GCornerNone);
+	graphics_context_set_stroke_color(ctx, textcolor_Steps_actual);
+	
 
 	if (health_higher_lower_than_avg > 0){
 		//TODO: paint arrow up
