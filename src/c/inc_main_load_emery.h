@@ -31,7 +31,7 @@ static void move_layers(void) {
 
 	MOVE_TEXT_LAYER(Date_Layer, 5, 89, 186, 30);
 	MOVE_TEXT_LAYER(cwLayer, 120, 184, 73, 20);
-	MOVE_TEXT_LAYER(moonLayer_IMG, 69, NightMode ? 26 : 23, 46, 45);
+	MOVE_TEXT_LAYER(moonLayer_IMG, 71, NightMode ? 26 : 23, 46, 45);
 
 	MOVE_TEXT_LAYER(weather_layer_1_temp, 69, 19, 130, 41);
 	MOVE_TEXT_LAYER(weather_layer_3_location, 0, -1, 152, 23);
