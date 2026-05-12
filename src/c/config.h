@@ -13,9 +13,9 @@
 
 //(un-)comment to change initial settings
 #ifdef PBL_COLOR
-  #define INVERT_COLORS 3 //2 means colors on Basalt, and white on black on Aplite
+  #define INVERT_COLORS 2 //2 means colors on Basalt, and white on black on Aplite
 #else
-  #define INVERT_COLORS 0
+  #define INVERT_COLORS 2
 #endif
 #define LIGHT_ON      1
 #define VIBE_ON_DISC 0 //disconnect
@@ -30,6 +30,9 @@
   #define COMPILE_WITH_SECONDS
 //#endif
 #define DISPLAY_SECONDS 5
+
+// Force health line for local testing: 3 = always steps, 4 = always sleep. Comment out for normal app settings.
+//#define FORCE_HEALTH_INFO 3
   
 // uncomment this to show all colors of the temperature
 //#define ITERATE_TEMP
@@ -45,4 +48,4 @@
   #define Y_OFFSET 0
 #endif
 
-#define MAX_NO_COLOR_PROFILES 15 //maximum static color profile index
+#define MAX_NO_COLOR_PROFILES 16 //maximum static color profile index

@@ -415,6 +415,9 @@ void LoadData(void) {
 
 	key = KEY_SET_HEALTH;
 	if (persist_exists(key)) HealthInfo = persist_read_int(key);
+#if defined(FORCE_HEALTH_INFO)
+	HealthInfo = FORCE_HEALTH_INFO;
+#endif
 
 	key = KEY_SET_UPDATE_TIME;
 	if (persist_exists(key)) ShowTimeSinceStationData = persist_read_int(key);
@@ -2046,8 +2049,10 @@ static void health_handler(HealthEventType event, void *context) {
 			if (do_update == 3){
 				print_time(sleep_str, sizeof(sleep_str), (time_t)0, 0);
 				snprintf(steps_str, sizeof(steps_str), "%s%s", sleep_str, unit);
+				bitmap_layer_set_bitmap(s_health_bmp_layer, s_health_bitmap_sleep);
 			} else {
 				snprintf(steps_str, sizeof(steps_str), "%d%s", (int)0, unit);
+				bitmap_layer_set_bitmap(s_health_bmp_layer, s_health_bitmap_steps);
 			}
 		}
 
@@ -2072,7 +2077,7 @@ static void layer_update_callback_health_up_down(Layer *layer, GContext* ctx){
 	#if defined(PBL_PLATFORM_EMERY)
 		layer_set_frame(text_layer_get_layer(text_layer_health), GRect(25+23, 180, 90, 30)); // Todo: fix hardcode and use vals from inc_main_load_x.h
 	#else
-		layer_set_frame(text_layer_get_layer(text_layer_health), GRect(14+10, 132, 100, 20)); // Todo: fix hardcode and use vals from inc_main_load_x.h
+		layer_set_frame(text_layer_get_layer(text_layer_health), GRect(14+12, 132, 100, 20)); // Todo: fix hardcode and use vals from inc_main_load_x.h
 	#endif		
 	graphics_context_set_fill_color(ctx, background_color_clock);
 	graphics_fill_rect(ctx, GRect(0, 0, pos, pos), 0, GCornerNone);
@@ -2512,6 +2517,8 @@ static void main_window_load(Window *window) {
 	// Attempt to subscribe 
 	if(!health_service_events_subscribe(health_handler, NULL)) {
 		APP_LOG(APP_LOG_LEVEL_ERROR, "Health not available!");
+	} else {
+		health_handler(HealthEventSignificantUpdate, NULL);
 	}
 #else
 	//APP_LOG(APP_LOG_LEVEL_ERROR, "Health not available!");
