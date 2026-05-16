@@ -6,6 +6,7 @@
 #include "mooncalc.h"
 #include "math.h"
 #include "effect_layer.h"
+#include "health_bitmap.h"
 
 static Window *s_main_window;
 static Layer *main_window_layer;
@@ -201,6 +202,7 @@ static int get_hex_from_picker_int(int);
 static void set_cwLayer_size(void);
 static void apply_color_profile(void);
 #ifndef PBL_PLATFORM_APLITE
+static void update_health_icon_colors(GColor color);
 static void timer_cycle_color_profile_callback(void *data);
 #endif
 
@@ -413,6 +415,9 @@ void LoadData(void) {
 
 	key = KEY_SET_HEALTH;
 	if (persist_exists(key)) HealthInfo = persist_read_int(key);
+#if defined(FORCE_HEALTH_INFO)
+	HealthInfo = FORCE_HEALTH_INFO;
+#endif
 
 	key = KEY_SET_UPDATE_TIME;
 	if (persist_exists(key)) ShowTimeSinceStationData = persist_read_int(key);
@@ -1725,6 +1730,16 @@ static void layer_update_callback_background(Layer *layer, GContext* ctx){
 #endif
 }
 
+#ifndef PBL_PLATFORM_APLITE
+static void update_health_icon_colors(GColor color) {
+	health_bitmap_set_icon_color(s_health_bitmap_steps, color);
+	health_bitmap_set_icon_color(s_health_bitmap_sleep, color);
+	if (s_health_bmp_layer) {
+		layer_mark_dirty(bitmap_layer_get_layer(s_health_bmp_layer));
+	}
+}
+#endif
+
 static void apply_color_profile(void){
 
 #include "inc_color_profiles.h"
@@ -1774,8 +1789,9 @@ static void apply_color_profile(void){
 
 #ifndef PBL_PLATFORM_APLITE
 	text_layer_set_text_color(text_layer_health, textcolor_Steps);
-	bitmap_layer_set_background_color(s_health_bmp_layer, background_color_clock);
+	bitmap_layer_set_background_color(s_health_bmp_layer, GColorClear);
 	bitmap_layer_set_compositing_mode(s_health_bmp_layer, GCompOpSet);
+	update_health_icon_colors(textcolor_Steps);
 #endif
 
 #ifndef PBL_PLATFORM_APLITE
@@ -2033,13 +2049,16 @@ static void health_handler(HealthEventType event, void *context) {
 			if (do_update == 3){
 				print_time(sleep_str, sizeof(sleep_str), (time_t)0, 0);
 				snprintf(steps_str, sizeof(steps_str), "%s%s", sleep_str, unit);
+				bitmap_layer_set_bitmap(s_health_bmp_layer, s_health_bitmap_sleep);
 			} else {
 				snprintf(steps_str, sizeof(steps_str), "%d%s", (int)0, unit);
+				bitmap_layer_set_bitmap(s_health_bmp_layer, s_health_bitmap_steps);
 			}
 		}
 
 		text_layer_set_text(text_layer_health, steps_str);
 		text_layer_set_text_color(text_layer_health, textcolor_Steps_actual);
+		update_health_icon_colors(textcolor_Steps_actual);
 	}
 	layer_mark_dirty(s_layer_health_up_down);
 }
@@ -2058,7 +2077,7 @@ static void layer_update_callback_health_up_down(Layer *layer, GContext* ctx){
 	#if defined(PBL_PLATFORM_EMERY)
 		layer_set_frame(text_layer_get_layer(text_layer_health), GRect(25+23, 180, 90, 30)); // Todo: fix hardcode and use vals from inc_main_load_x.h
 	#else
-		layer_set_frame(text_layer_get_layer(text_layer_health), GRect(14+10, 132, 100, 20)); // Todo: fix hardcode and use vals from inc_main_load_x.h
+		layer_set_frame(text_layer_get_layer(text_layer_health), GRect(14+12, 132, 100, 20)); // Todo: fix hardcode and use vals from inc_main_load_x.h
 	#endif		
 	graphics_context_set_fill_color(ctx, background_color_clock);
 	graphics_fill_rect(ctx, GRect(0, 0, pos, pos), 0, GCornerNone);
@@ -2446,8 +2465,8 @@ static void main_window_load(Window *window) {
 	LoadData();
 
 #ifndef PBL_PLATFORM_APLITE
-	s_health_bitmap_sleep = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_HEALTH_SLEEP);
-	s_health_bitmap_steps = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_HEALTH_STEPS);
+	s_health_bitmap_sleep = health_bitmap_load(RESOURCE_ID_IMAGE_HEALTH_SLEEP);
+	s_health_bitmap_steps = health_bitmap_load(RESOURCE_ID_IMAGE_HEALTH_STEPS);
 #endif
 
 #ifdef PBL_PLATFORM_APLITE
@@ -2498,6 +2517,8 @@ static void main_window_load(Window *window) {
 	// Attempt to subscribe 
 	if(!health_service_events_subscribe(health_handler, NULL)) {
 		APP_LOG(APP_LOG_LEVEL_ERROR, "Health not available!");
+	} else {
+		health_handler(HealthEventSignificantUpdate, NULL);
 	}
 #else
 	//APP_LOG(APP_LOG_LEVEL_ERROR, "Health not available!");
