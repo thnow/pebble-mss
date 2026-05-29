@@ -9,6 +9,7 @@ static void move_layers(void) {
 	MOVE_LAYER(s_image_layer_minute_2, 111+X_OFFSET-5, 94+Y_OFFSET, 26, 41);
 	MOVE_LAYER(s_image_layer_second_1, 139+X_OFFSET-4, 94+Y_OFFSET, 10, 15);
 	MOVE_LAYER(s_image_layer_second_2, 152+X_OFFSET-5, 94+Y_OFFSET, 10, 15);
+	MOVE_TEXT_LAYER(kp_layer, 130+X_OFFSET, 89+Y_OFFSET, 38, 22);
 	MOVE_TEXT_LAYER(text_sunrise_layer, 0, 152+Y_OFFSET, 90-10 /* width */, 30 /* height */); 
 	MOVE_TEXT_LAYER(text_sunset_layer, 90+10, 152+Y_OFFSET, 50 /* width */, 30 /* height */);
 	MOVE_TEXT_LAYER(connection_layer, 0, 70+Y_OFFSET, 20, 17);
@@ -93,6 +94,13 @@ static void create_layers(void) {
 	text_layer_set_text_alignment(connection_layer, GTextAlignmentCenter);
 	text_layer_set_text(connection_layer, "--");
 	layer_add_child(main_window_layer, text_layer_get_layer(connection_layer));
+
+	kp_layer = text_layer_create(GRectZero);
+	text_layer_set_text_color(kp_layer, textcolor);
+	text_layer_set_background_color(kp_layer, GColorClear);
+	text_layer_set_font(kp_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+	text_layer_set_text_alignment(kp_layer, GTextAlignmentRight);
+	layer_add_child(main_window_layer, text_layer_get_layer(kp_layer));
 
 	// Battery state / runtime:
 	battery_runtime_layer = text_layer_create(GRectZero);

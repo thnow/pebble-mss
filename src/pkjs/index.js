@@ -244,6 +244,56 @@ var xhrRequest = function (url, type, callback) {
     xhr.send();
 };
 
+function sendKpIndexToPebble(kpIndex) {
+    Pebble.sendAppMessage(
+        {
+            "KEY_KP_INDEX": kpIndex
+        },
+        function(e) {
+            console.log("Kp index sent to Pebble successfully!");
+        },
+        function(e) {
+            console.log("Error sending Kp index to Pebble!");
+        }
+    );
+}
+
+function getKpIndex() {
+    var url = "https://services.swpc.noaa.gov/json/planetary_k_index_1m.json";
+    console.log("Kp URL = " + url);
+
+    xhrRequest(url, 'GET',
+               function(responseText) {
+                   var kpData;
+                   try {
+                       kpData = JSON.parse(responseText);
+                       console.log("successfully parsed returned Kp data.");
+                   } catch (e) {
+                       console.log("could not parse returned Kp data: " + e);
+                       return;
+                   }
+
+                   if (!kpData || !kpData.length) {
+                       console.log("Kp data is empty.");
+                       return;
+                   }
+
+                   for (var i = kpData.length - 1; i >= 0; i--) {
+                       if (typeof kpData[i].kp_index !== "undefined") {
+                           var kpIndex = parseInt(kpData[i].kp_index, 10);
+                           if (!isNaN(kpIndex)) {
+                               console.log("Kp index is " + kpIndex);
+                               sendKpIndexToPebble(kpIndex);
+                               return;
+                           }
+                       }
+                   }
+
+                   console.log("No usable Kp index found.");
+               }
+    );
+}
+
 function locationSuccess(pos) {
     console.log("locationSuccess Begin");
     //TODO: save loc:
@@ -728,6 +778,7 @@ function getWeather() {
     //console.log("reading config from localStorage REMOVED!!!");
 
     console.log("getWeather Begin");
+    getKpIndex();
     var options = {
         enableHighAccuracy: false,
         timeout: 10000,

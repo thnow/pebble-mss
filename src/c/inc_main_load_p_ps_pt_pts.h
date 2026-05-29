@@ -10,6 +10,7 @@ static void move_layers(void) {
 #ifdef COMPILE_WITH_SECONDS
 	MOVE_LAYER(s_image_layer_second_1, 113, 137, 10, 15);
 	MOVE_LAYER(s_image_layer_second_2, 126, 137, 10, 15);
+	MOVE_TEXT_LAYER(kp_layer, 107, 132, 35, 22);
 #endif
 	MOVE_TEXT_LAYER(text_sunrise_layer, 7, 152, 50, 30);
 	MOVE_TEXT_LAYER(text_sunset_layer, 110, 152, 50, 30);
@@ -95,6 +96,15 @@ static void create_layers(void) {
   text_layer_set_text_alignment(connection_layer, GTextAlignmentCenter);
   text_layer_set_text(connection_layer, "----");
   layer_add_child(main_window_layer, text_layer_get_layer(connection_layer));
+
+#ifdef COMPILE_WITH_SECONDS
+  kp_layer = text_layer_create(GRectZero);
+  text_layer_set_text_color(kp_layer, textcolor);
+  text_layer_set_background_color(kp_layer, GColorClear);
+  text_layer_set_font(kp_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+  text_layer_set_text_alignment(kp_layer, GTextAlignmentRight);
+  layer_add_child(main_window_layer, text_layer_get_layer(kp_layer));
+#endif
   
   // Battery state / runtime:
   battery_runtime_layer = text_layer_create(GRectZero);

@@ -63,6 +63,7 @@
             "KEY_TIME_UTC_OFFSET": 10,
             "KEY_TIME_ZONE_NAME": 12,
             "KEY_WARN_LOCATION": 50,
+            "KEY_KP_INDEX": 80,
             "KEY_WEATHER_AVWX_STRING_1": 101,
             "KEY_WEATHER_AVWX_STRING_2": 102,
             "KEY_WEATHER_AVWX_STRING_3": 103,

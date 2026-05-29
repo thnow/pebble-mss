@@ -19,6 +19,7 @@ static Layer *s_image_layer_minute_2;
 #ifdef COMPILE_WITH_SECONDS
 static Layer *s_image_layer_second_1;
 static Layer *s_image_layer_second_2;
+static TextLayer *kp_layer;
 #endif
 
 
@@ -28,6 +29,8 @@ static int digit_m_1 = 0;
 static int digit_m_2 = 0;
 static int digit_s_1 = 0;
 static int digit_s_2 = 0;
+static int kp_index = -1;
+static char kp_text[5] = "Kp-";
 
 static Layer *background_paint_layer;
 
@@ -151,6 +154,7 @@ static int ColoredTemperature = 1;
 #endif
 static int LightOn = LIGHT_ON;
 #ifdef COMPILE_WITH_SECONDS
+#define DISPLAY_KP_INDEX 6
 static int DisplaySeconds = DISPLAY_SECONDS; //=2 means the seconds are only on after shaking
 static int DisplaySecondsTimeout = 5; //in seconds
 #endif
@@ -204,6 +208,9 @@ static void apply_color_profile(void);
 #ifndef PBL_PLATFORM_APLITE
 static void update_health_icon_colors(GColor color);
 static void timer_cycle_color_profile_callback(void *data);
+#endif
+#ifdef COMPILE_WITH_SECONDS
+static void update_kp_layer(void);
 #endif
 
 
@@ -402,6 +409,8 @@ void LoadData(void) {
 #ifdef COMPILE_WITH_SECONDS
 	key = KEY_SET_DISPLAY_SEC;
 	if (persist_exists(key)) DisplaySeconds = persist_read_int(key);
+	key = KEY_KP_INDEX;
+	if (persist_exists(key)) kp_index = persist_read_int(key);
 #endif
 
 	key = KEY_SET_VIBE_DISC;
@@ -492,6 +501,7 @@ void SaveData(void) {
 #endif
 #ifdef COMPILE_WITH_SECONDS
 	persist_write_int(KEY_SET_DISPLAY_SEC, DisplaySeconds);
+	persist_write_int(KEY_KP_INDEX, kp_index);
 #endif
 	persist_write_int(KEY_SET_LIGHT_ON, LightOn);
 	persist_write_int(KEY_SET_VIBE_DISC, vibe_on_disconnect);
@@ -1007,7 +1017,7 @@ static void handle_second_tick(struct tm* current_time, TimeUnits units_changed)
 		layer_mark_dirty(s_image_layer_minute_2);
 	}
 #ifdef COMPILE_WITH_SECONDS
-	if (DisplaySeconds){
+	if ((DisplaySeconds) && (DisplaySeconds != DISPLAY_KP_INDEX)){
 		if (digit_s_1_old != digit_s_1){ //should save energy
 			layer_mark_dirty(s_image_layer_second_1);
 			digit_s_1_old = digit_s_1;
@@ -1172,7 +1182,7 @@ static void handle_second_tick(struct tm* current_time, TimeUnits units_changed)
 	}
 
 #ifdef COMPILE_WITH_SECONDS
-	if (DisplaySeconds >= 2){
+	if ((DisplaySeconds >= 2) && (DisplaySeconds != DISPLAY_KP_INDEX)){
 		if (SecOnShakingOn){
 			SecondsTimeoutCounter++;
 			//APP_LOG(APP_LOG_LEVEL_INFO, "SecondsTimeoutCounter = %d", SecondsTimeoutCounter);
@@ -1621,7 +1631,7 @@ static void layer_update_callback_second_1(Layer *layer, GContext* ctx) {
 	graphics_context_set_fill_color(ctx, background_color_clock);
 	graphics_fill_rect(ctx, GRect(0, 0, 10, 15), 0, GCornerNone);
 	graphics_context_set_stroke_color(ctx, textcolor_seconds);
-	if (!DisplaySeconds){
+	if ((!DisplaySeconds) || (DisplaySeconds == DISPLAY_KP_INDEX)){
 		return;
 	}
 	#if defined(PBL_PLATFORM_EMERY)
@@ -1665,7 +1675,7 @@ static void layer_update_callback_second_2(Layer *layer, GContext* ctx) {
 	graphics_context_set_fill_color(ctx, background_color_clock);
 	graphics_fill_rect(ctx, GRect(0, 0, 10, 15), 0, GCornerNone);
 	graphics_context_set_stroke_color(ctx, textcolor_seconds);
-	if (!DisplaySeconds){
+	if ((!DisplaySeconds) || (DisplaySeconds == DISPLAY_KP_INDEX)){
 		return;
 	}
 	#if defined(PBL_PLATFORM_EMERY)
@@ -1786,6 +1796,9 @@ static void apply_color_profile(void){
 	text_layer_set_text_color(weather_layer_7_string_1, textcolor_weather);
 	text_layer_set_text_color(weather_layer_7_string_2, textcolor_weather);
 	text_layer_set_text_color(text_TimeZone_layer, textcolor_tz);
+#ifdef COMPILE_WITH_SECONDS
+	text_layer_set_text_color(kp_layer, textcolor_seconds);
+#endif
 
 #ifndef PBL_PLATFORM_APLITE
 	text_layer_set_text_color(text_layer_health, textcolor_Steps);
@@ -1851,6 +1864,23 @@ static void set_cwLayer_size(void){
 #endif
 #endif
 }
+
+#ifdef COMPILE_WITH_SECONDS
+static void update_kp_layer(void) {
+	if (!kp_layer) {
+		return;
+	}
+	if ((kp_index >= 0) && (kp_index <= 9)) {
+		snprintf(kp_text, sizeof(kp_text), "Kp%d", kp_index);
+	} else {
+		snprintf(kp_text, sizeof(kp_text), "%s", "Kp-");
+	}
+	text_layer_set_text(kp_layer, kp_text);
+	layer_set_hidden(text_layer_get_layer(kp_layer), DisplaySeconds != DISPLAY_KP_INDEX);
+	layer_set_hidden(s_image_layer_second_1, DisplaySeconds == DISPLAY_KP_INDEX);
+	layer_set_hidden(s_image_layer_second_2, DisplaySeconds == DISPLAY_KP_INDEX);
+}
+#endif
 
 static int get_hex_from_picker_int(int i) {
 	switch(i) {
@@ -2102,7 +2132,7 @@ static void layer_update_callback_health_up_down(Layer *layer, GContext* ctx){
 
 #ifdef COMPILE_WITH_SECONDS
 static void tap_handler(AccelAxisType axis, int32_t direction) {
-	if (DisplaySeconds < 2) return;
+	if ((DisplaySeconds < 2) || (DisplaySeconds == DISPLAY_KP_INDEX)) return;
 	SecOnShakingOn = 1;
 	SecondsTimeoutCounter = 0;
 	tick_timer_service_unsubscribe();
@@ -2271,19 +2301,27 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
 				DisplaySeconds = (int)t->value->int32;
 				//APP_LOG(APP_LOG_LEVEL_INFO, "DisplaySeconds = %d", DisplaySeconds);
 				set_cwLayer_size();
+				update_kp_layer();
 				layer_mark_dirty(s_image_layer_second_1);
 				layer_mark_dirty(s_image_layer_second_2);
 				tick_timer_service_unsubscribe();
-				if (DisplaySeconds >= 2){
+				if ((DisplaySeconds >= 2) && (DisplaySeconds != DISPLAY_KP_INDEX)){
 					SecOnShakingOn = 1;
 					SecondsTimeoutCounter = 0;
 				}
-				if (DisplaySeconds)
+				if ((DisplaySeconds) && (DisplaySeconds != DISPLAY_KP_INDEX))
 					tick_timer_service_subscribe(SECOND_UNIT, &handle_second_tick);
 				else
 					tick_timer_service_subscribe(MINUTE_UNIT, &handle_second_tick);
 				break;
 #endif
+
+			case KEY_KP_INDEX:
+				kp_index = (int)t->value->int32;
+#ifdef COMPILE_WITH_SECONDS
+				update_kp_layer();
+#endif
+				break;
 
 			case KEY_SET_VIBE_DISC:
 				vibe_on_disconnect = (int)t->value->int32;
@@ -2478,6 +2516,9 @@ static void main_window_load(Window *window) {
 	create_layers();
 
 	apply_color_profile();
+#ifdef COMPILE_WITH_SECONDS
+	update_kp_layer();
+#endif
 
 	DisplayData();
 
@@ -2497,11 +2538,11 @@ static void main_window_load(Window *window) {
 
 	// --- Register Event Handlers ---
 #ifdef COMPILE_WITH_SECONDS
-	if (DisplaySeconds >= 2){
+	if ((DisplaySeconds >= 2) && (DisplaySeconds != DISPLAY_KP_INDEX)){
 		SecOnShakingOn = 1;
 		SecondsTimeoutCounter = 0;
 	}
-	if (DisplaySeconds)
+	if ((DisplaySeconds) && (DisplaySeconds != DISPLAY_KP_INDEX))
 		tick_timer_service_subscribe(SECOND_UNIT, &handle_second_tick);
 	else
 #endif
@@ -2578,6 +2619,7 @@ static void main_window_unload(Window *window) {
 #ifdef COMPILE_WITH_SECONDS
 	layer_destroy(s_image_layer_second_1);
 	layer_destroy(s_image_layer_second_2);
+	text_layer_destroy(kp_layer);
 #endif
 
 
