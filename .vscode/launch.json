@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Pebble: Run on PT2 emulator",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "${workspaceFolder}/.venv/bin/pebble install --emulator emery",
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "Pebble: build"
+    },
+    {
+      "name": "Pebble: Open config on PT2 emulator",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "${workspaceFolder}/.venv/bin/pebble emu-app-config --emulator emery",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Pebble: Logs from PT2 emulator",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "${workspaceFolder}/.venv/bin/pebble logs --emulator emery",
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

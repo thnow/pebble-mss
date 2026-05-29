@@ -41,3 +41,5 @@ Useful VS Code tasks:
 - `Pebble: open app config on PT2 emulator`
 - `Pebble: logs from PT2 emulator`
 - `Pebble: screenshot from PT2 emulator`
+
+Press `F5` in VS Code and select `Pebble: Run on PT2 emulator` to build and install the watchface on the Pebble Time 2 emulator.
