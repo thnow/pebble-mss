@@ -21,3 +21,23 @@ Release Notes:
 * (Possible) Fix for up/down arrow in health always pointing down
 
 Notice: There is still an issue with the up/down arrow of sleep/steps. It might be related to a bug in the current new pebble app. I'm testing some things out that I'm done with yet, but decided that since it dosn't work currently, i might as well release this now
+
+## Local development
+
+This repository can use a project-local Python environment for the Pebble CLI:
+
+```bash
+python3 -m venv .venv
+uv pip install --python .venv/bin/python -r requirements-dev.txt
+```
+
+VS Code is configured to use `.venv/bin/python` and to put `.venv/bin` on the integrated terminal `PATH`.
+
+Useful VS Code tasks:
+
+- `Pebble: SDK install 4.5`
+- `Pebble: build`
+- `Pebble: install on PT2 emulator`
+- `Pebble: open app config on PT2 emulator`
+- `Pebble: logs from PT2 emulator`
+- `Pebble: screenshot from PT2 emulator`

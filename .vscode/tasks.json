@@ -1,0 +1,49 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Pebble: SDK install 4.5",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/bin/pebble sdk install 4.5",
+      "problemMatcher": []
+    },
+    {
+      "label": "Pebble: build",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/bin/pebble build",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Pebble: install on PT2 emulator",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/bin/pebble install --emulator emery",
+      "dependsOn": "Pebble: build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Pebble: open app config on PT2 emulator",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/bin/pebble emu-app-config --emulator emery",
+      "problemMatcher": []
+    },
+    {
+      "label": "Pebble: logs from PT2 emulator",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/bin/pebble logs --emulator emery",
+      "problemMatcher": []
+    },
+    {
+      "label": "Pebble: screenshot from PT2 emulator",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/bin/pebble screenshot --emulator emery",
+      "problemMatcher": []
+    },
+    {
+      "label": "Pebble: kill emulators",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/bin/pebble kill",
+      "problemMatcher": []
+    }
+  ]
+}
